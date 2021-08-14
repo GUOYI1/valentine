@@ -1,15 +1,17 @@
-;(function (window) {
+; (function (window) {
   window.requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame ||
-  window.webkitRequestAnimationFrame || window.msRequestAnimationFrame
+    window.webkitRequestAnimationFrame || window.msRequestAnimationFrame
 
   const FRAME_RATE = 60
   const PARTICLE_NUM = 2000
   const RADIUS = Math.PI * 2
-  const CANVASWIDTH = 500
-  const CANVASHEIGHT = 150
+  const CANVASWIDTH = 1000
+  const CANVASHEIGHT = 300
   const CANVASID = 'canvas'
 
-  let texts = ['MY DEAR', 'LOOK UP AT THE', 'STARRY SKY', 'ARE YOU', 'LOOKING AT THE', 'SAME STAR', 'WITH ME ?', 'HAPPY', 'CHINESE', 'VALENTINE\'S', 'DAY', 'I MISS YOU']
+  let texts = ['MY SWEET WINNIE', 'LOOK UP AT THE', 'STARRY SKY', 'ARE YOU', 'LOOKING AT THE', 'SAME STAR', 'WITH ME ^_^?',
+    'HAPPY', 'CHINESE', 'VALENTINE\'S', 'DAY', 'ALL THAT BBN IS', 'IS ALL THAT', 'YBB\'LL EVER NEED', 'I MISS YOU', 'REALLY(⸝⸝ᵕᴗᵕ⸝⸝)',
+    'REALLY......']
 
   let canvas,
     ctx,
@@ -17,16 +19,20 @@
     quiver = true,
     text = texts[0],
     textIndex = 0,
-    textSize = 70
+    textSize = 70,
+    finishTextDraw=false
 
-  function draw () {
+  function draw() {
     ctx.clearRect(0, 0, CANVASWIDTH, CANVASHEIGHT)
     ctx.fillStyle = 'rgb(255, 255, 255)'
-    ctx.textBaseline = 'middle'
-    ctx.fontWeight = 'bold'
-    ctx.font = textSize + 'px \'SimHei\', \'Avenir\', \'Helvetica Neue\', \'Arial\', \'sans-serif\''
-    ctx.fillText(text, (CANVASWIDTH - ctx.measureText(text).width) * 0.5, CANVASHEIGHT * 0.5)
-
+    if(finishTextDraw){
+      generateHeart((CANVASWIDTH - CANVASHEIGHT * 0.5)*0.5,CANVASHEIGHT * 0.5,CANVASHEIGHT * 0.5,CANVASHEIGHT * 0.5)
+    }else{
+      ctx.textBaseline = 'middle'
+      ctx.fontWeight = 'bold'
+      ctx.font = textSize + 'px \'SimHei\', \'Avenir\', \'Helvetica Neue\', \'Arial\', \'sans-serif\''
+      ctx.fillText(text, (CANVASWIDTH - ctx.measureText(text).width) * 0.5, CANVASHEIGHT * 0.5)
+    }
     let imgData = ctx.getImageData(0, 0, CANVASWIDTH, CANVASHEIGHT)
 
     ctx.clearRect(0, 0, CANVASWIDTH, CANVASHEIGHT)
@@ -37,10 +43,54 @@
     }
     particleText(imgData)
 
+
     window.requestAnimationFrame(draw)
   }
 
-  function particleText (imgData) {
+  function generateHeart(fromx, fromy,lw,hlen) {
+    var x = fromx
+    var y = fromy
+    var width = lw 
+    var height = hlen
+  
+    ctx.save()
+    ctx.beginPath()
+    var topCurveHeight = height * 0.3
+    ctx.moveTo(x, y + topCurveHeight)
+    // top left curve
+    ctx.bezierCurveTo(
+      x, y, 
+      x - width / 2, y, 
+      x - width / 2, y + topCurveHeight
+    )
+  
+    // bottom left curve
+    ctx.bezierCurveTo(
+      x - width / 2, y + (height + topCurveHeight) / 2, 
+      x, y + (height + topCurveHeight) / 2, 
+      x, y + height
+    )
+  
+    // bottom right curve
+    ctx.bezierCurveTo(
+      x, y + (height + topCurveHeight) / 2, 
+      x + width / 2, y + (height + topCurveHeight) / 2, 
+      x + width / 2, y + topCurveHeight
+    )
+  
+    // top right curve
+    ctx.bezierCurveTo(
+      x + width / 2, y, 
+      x, y, 
+      x, y + topCurveHeight
+    )
+  
+    ctx.closePath()
+    ctx.fillStyle = 'rgba(226,225,142, ' + this.opacity + ')'
+    ctx.fill()
+  }
+
+  function particleText(imgData) {
     // 点坐标获取
     var pxls = []
     for (var w = CANVASWIDTH; w > 0; w -= 3) {
@@ -56,7 +106,7 @@
     var j = parseInt((particles.length - pxls.length) / 2, 10)
     j = j < 0 ? 0 : j
 
-    for (var i = 0; i < pxls.length && j < particles.length; i++, j++) {
+    for (var i = 0; i < pxls.length && j < particles.length; i++ , j++) {
       try {
         var p = particles[j],
           X,
@@ -80,7 +130,7 @@
         p.inText = true
         p.fadeIn()
         p.draw(ctx)
-      } catch (e) {}
+      } catch (e) { }
     }
     for (var i = 0; i < particles.length; i++) {
       var p = particles[i]
@@ -104,7 +154,7 @@
     }
   }
 
-  function setDimensions () {
+  function setDimensions() {
     canvas.width = CANVASWIDTH
     canvas.height = CANVASHEIGHT
     canvas.style.position = 'absolute'
@@ -115,11 +165,12 @@
     canvas.style.marginTop = window.innerHeight * .15 + 'px'
   }
 
-  function event () {
+  function event() {
     document.addEventListener('click', function (e) {
       textIndex++
       if (textIndex >= texts.length) {
         textIndex--
+        finishTextDraw=true
         return
       }
       text = texts[textIndex]
@@ -130,6 +181,7 @@
       textIndex++
       if (textIndex >= texts.length) {
         textIndex--
+        finishTextDraw=true
         return
       }
       text = texts[textIndex]
@@ -137,7 +189,7 @@
     }, false)
   }
 
-  function init () {
+  function init() {
     canvas = document.getElementById(CANVASID)
     if (canvas === null || !canvas.getContext) {
       return
@@ -154,7 +206,7 @@
   }
 
   class Particle {
-    constructor (canvas) {
+    constructor(canvas) {
       let spread = canvas.height
       let size = Math.random() * 1.2
       // 速度
@@ -181,26 +233,26 @@
       this.fadingOut = true
       this.fadingIn = true
     }
-    fadeIn () {
+    fadeIn() {
       this.fadingIn = this.opacity > this.opacityTresh ? false : true
       if (this.fadingIn) {
         this.opacity += this.fadeInRate
-      }else {
+      } else {
         this.opacity = 1
       }
     }
-    fadeOut () {
+    fadeOut() {
       this.fadingOut = this.opacity < 0 ? false : true
       if (this.fadingOut) {
         this.opacity -= this.fadeOutRate
         if (this.opacity < 0) {
           this.opacity = 0
         }
-      }else {
+      } else {
         this.opacity = 0
       }
     }
-    draw (ctx) {
+    draw(ctx) {
       ctx.fillStyle = 'rgba(226,225,142, ' + this.opacity + ')'
       ctx.beginPath()
       ctx.arc(this.x, this.y, this.size, 0, RADIUS, true)
@@ -208,14 +260,9 @@
       ctx.fill()
     }
   }
-  
-  var isChrome = /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor);
-    if(!isChrome){
-      $('#iframeAudio').remove()
-  }
-  
+
   // setTimeout(() => {
-    init()  
+  init()
   // }, 4000);
   // mp3.play()
 })(window)
